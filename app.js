@@ -41,7 +41,7 @@ const yAxis = d3.axisLeft(y)
                 .ticks(10)
                 .tickFormat(d => d + ' orders')
 
-                //update x axis text
+//update x axis text
 xAxisGroup.selectAll('text')
             .attr('transform', 'rotate(-40)')
             .attr('text-anchor', 'end')
@@ -49,7 +49,7 @@ xAxisGroup.selectAll('text')
 
 
 
-            //update function
+//update function
 const update = (data) =>{
     //update any scales that rely on data
     y.domain([0, d3.max(data, d => d.orders)])
@@ -85,16 +85,30 @@ const update = (data) =>{
  
 }
 
-// get data from firestore
-db.collection('menu-items').get().then(res => {
-    // console.log(res)
-    let data = [];
-    res.docs.forEach(doc => {
-        // console.log(doc.data())
-        data.push(doc.data())
+let data = []
+// get data from firestore, listen for snapshot change
+db.collection('menu-items').onSnapshot(res => {
+    console.log(res.docChanges())
+    res.docChanges().forEach(change => {
+        // console.log(change.doc.data())
+        const doc = {...change.doc.data(), id: change.doc.id}
+        console.log(doc)
+        switch (change.type) {
+            case 'added':
+                data.push(doc)
+                break;
+            case 'modified':
+                //cahnge doc in array if the id of the snapshot matches
+                const index = data.findIndex(item => item.id == doc.id);
+                data[index] = doc;
+                break;
+            case 'removed':
+                //if true item remain in array, otherwise it's removed
+                data = data.filter(item => item.id != doc.id)
+                break;
+            default:
+                break;
+        }
     });
-    
-    //update with new data from firestore
     update(data)
 })
-
