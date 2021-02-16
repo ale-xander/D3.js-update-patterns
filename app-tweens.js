@@ -48,7 +48,7 @@ xAxisGroup.selectAll('text')
             .attr('text-anchor', 'end')
             .attr('fill', 'orange')
 
-const t = d3.transition().duration(500)
+const t = d3.transition().duration(1500)
 
 //update function
 const update = (data) =>{
@@ -75,7 +75,7 @@ const update = (data) =>{
     //append enter selection to DOM
     rects.enter()
         .append('rect')
-        .attr('width', x.bandwidth)
+        
         //starting condition
         .attr("height", 0)
         .attr('y', graphHeight)
@@ -83,6 +83,7 @@ const update = (data) =>{
         .attr('x', d => x(d.name))
         //ending conditions below
         .transition(t)
+            .attrTween('width', widthTween)
             .attr('y', d => y(d.orders))
             .attr("height", d => graphHeight - y(d.orders))
         
@@ -120,3 +121,18 @@ db.collection('menu-items').onSnapshot(res => {
     });
     update(data)
 })
+
+// ====================== TWEENS ======================
+const widthTween = () => {
+    //define interpolation
+    let i = d3.interpolate(0, x.bandwidth());
+    // i is a function that you can pass either 0 (which returns 0) or 1 (which return x.bandwidth)
+    // this is a time ticker. if you send it a 0.5 it will give you the midpoint between 0 and x.bandwidth
+    // returns a position during the transition
+
+    // returns a function which takes ina time ticker t. t represents the different stages thru the transition that it's currntly in
+    return function(t){
+        //return the value from passing the ticker into the interpolation
+        return i(t)
+    }
+}
