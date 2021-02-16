@@ -65,10 +65,12 @@ const update = (data) =>{
 
     //update current shapes in DOM
     rects.attr('width', x.bandwidth)
-        .attr("height", d => graphHeight - y(d.orders))
         .attr('fill', 'orange')
         .attr('x', d => x(d.name))
-        .attr('y', d => y(d.orders))
+        //new ending positions
+        .transition().duration(750)
+            .attr("height", d => graphHeight - y(d.orders))
+            .attr('y', d => y(d.orders))
 
     //append enter selection to DOM
     rects.enter()
